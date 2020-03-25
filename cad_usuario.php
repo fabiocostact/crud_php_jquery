@@ -63,18 +63,26 @@
           <input type="radio" name="status" id="statusI" class="flat-red" value="C"> Cancelado
       </div>
     </div>
-    <div class="form-group col-lg-5">
+    <div class="form-group col-lg-4">
       <label for="login">Login*</label>
       <input type="text" class="form-control" id="login" placeholder="Login" maxlength="20" minlength="1" value="" name="login">
     </div>
-    <div class="form-group col-lg-5">
+    <div class="form-group col-lg-4">
       <label for="Senha"><?php echo ($vcod_usuario <= 0 ? 'Senha*' : 'Senha')?></label>
       <input type="password" class="form-control" id="senha" value="" minlength="4" maxlength="10" name="senha">
     </div>
-  <div class="form-group col-lg-2">
-   <label for="usuario">Acessa Usuário</label><br>
-   <input type="checkbox" class="flat-red" name="acessa_usuario" id="acessa_usuario" value="S">
-  </div>
+    <div class="form-group col-lg-2">
+     <label for="usuario">Acessa Usuário</label><br>
+     <input type="checkbox" class="flat-red" name="acessa_usuario" id="acessa_usuario" value="S">
+    </div>
+  	<div class="form-group col-lg-2">
+                  <label>Tipo</label>
+                  <select class="form-control" id="tipo" name="tipo">
+                    <option value="G">Gerência</option>
+                    <option value="A">Administrativo</option>
+                    <option value="C">Consultor</option>
+                  </select>
+    </div>
   </div>
   <div class="box-footer">
     <div class="form-group col-lg-6">

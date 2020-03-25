@@ -64,8 +64,6 @@
 	$uf_empregador = "";
 	$tel_empregador = "";
 	
-	$status_emprestimo_n = 0;
-
 		
 	$rs = $con->prepare("SELECT
 							c.id,
@@ -121,24 +119,8 @@
 	$rs->execute();
 	$row = $rs->fetch(PDO::FETCH_OBJ);
 	
-	if($row->status_emprestimo == '1'){
-		$status_class = "label-info";
-		$status_emprestimo = "Pendente";
-		$status_emprestimo_n = 1;
-	}elseif($row->status_emprestimo == '2'){
-		$status_class = "label-warning";
-		$status_emprestimo = "Em Análise";
-		$status_emprestimo_n = 2;
-	}elseif($row->status_emprestimo == '3'){
-		$status_class = "label-success";
-		$status_emprestimo = "Aprovado";
-		$status_emprestimo_n = 3;
-	}else{
-		$status_class = "label-danger";
-		$status_emprestimo = "Negado";
-		$status_emprestimo_n = 4;
-	}
 	
+	$status_emprestimo = $row->status_emprestimo;
 	$id_cliente = $row->id;
 	$nome = $row->nome;
 	$cpf = formatCnpjCpf(str_pad($row->cpf,11,"0",STR_PAD_LEFT));
@@ -172,7 +154,29 @@
 	$data_admissao= $row->dt_admissao;
 	$salario = number_format($row->salario, 2, ',', '.');
 	$matricula = $row->matricula;
-	$modalidade = $row->modalidade;
+	
+	switch ($row->modalidade) {
+		case 'AS':
+			$modalidade = 'Assalariado (carteira registrada)';
+			break;
+		case 'FP':
+			$modalidade = 'Funcionário Público (ativo/inativo)';
+			break;
+		case 'PL':
+			$modalidade = 'Autônomo/Profissional Liberal';
+			break;
+		case 'AP':
+			$modalidade = 'Aposentado/Pensionista INSS';
+			break;
+		case 'BL':
+			$modalidade = 'Benefic. LOAS/BPC/Amparo Social';
+			break;
+		case 'BA':
+			$modalidade = 'Benefic. Auxilio Doença';
+			break;		
+	}
+		
+	
 	$valor_desejado = number_format($row->valor_desejado, 2, ',', '.');
 	$qtde_parcela_desejada = $row->qtde_parcela_desejada;
 	$valor_aprovado = number_format($row->valor_aprovado, 2, ',', '.');
@@ -340,14 +344,57 @@ legend {
 	font-weight: bold;
 }
 
-</style>
 
+#modal_dialog,
+#modal_content {
+    /* 80% of window height */
+    height: 95%;
+	width: 850px;
+}
+
+#modal_body{
+	max-height: calc(100% - 120px);
+    overflow-y: scroll;
+}
+
+.img {
+    max-width:800px;
+    /*max-height:300px;
+    width: auto;*/
+    height: auto;
+}
+
+.btndonw {
+  padding:5px 10px;
+  font-size:16px;
+  border-radius:3px;
+  border:solid 1px #C0392B;
+  background-color:#E74C3C;
+  text-decoration:none;
+  color:white;
+}
+ 
+.btndonw:hover {
+  opacity: .9;
+}
+ 
+.btndonw:active {
+  opacity:1;
+}
+
+
+</style>
+<script>
+	$(document).ready(function(){
+		$("#status_emprestimo").html(verifica_status(<?php echo $status_emprestimo?>));
+	});
+</script>
 <div class="box box-default">
     <div class="box-header with-border col-lg-10">
         <h3 class="box-title">Solicitações</h3>
     </div>
-    <div class="box-header with-border col-lg-2">
-        <span class='label <?php echo $status_class?>'><?php echo $status_emprestimo?></span>
+    <div class="box-header with-border col-lg-2" id="status_emprestimo">
+        
     </div>
 
     <ul class="nav nav-tabs" id="myTab" role="tablist" style="padding-top: 50px;">
@@ -599,28 +646,14 @@ legend {
                 <fieldset class="scheduler-border">
                       <legend class="scheduler-border"><li class="fa fa-check-square-o"></li> Ocorrências</legend>
                       <div class="form-group col-lg-12">
-                          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" <?php echo ($status_emprestimo_n == 3 ? "disabled='disabled'" : "")?>>Nova Ocorrência</button>
+                          <button type="button" class="btn btn-primary" id="modal_status" data-toggle="modal" data-target="#myModal" <?php echo ($status_emprestimo == 7 || $status_emprestimo == 8  ? "disabled='disabled'" : "")?>>Nova Ocorrência</button>
+                          <input type="hidden" name="status_emprestimo_st" id="status_emprestimo_st" value="<?php echo $status_emprestimo?>">
                       </div>
                       
                       <div class="col-xs-12">
                           <div class="box-body table-responsive" id="lista_ocorrencias" style="background-color:#FFF;">
                             <table id="grid" class="table table-bordered table-striped table-hover">
-                              <thead>
-                              <tr>
-                                <th>Descrição</th>
-                                <th>Data</th>
-                                <th>Usuário</th>
-                                <th>Status</th>
-                              </tr>
-                              </thead>
-                              <tbody>
-                              <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                              </tr>
-                              </tbody>
+                              
                             </table>
                           </div>
                     </div>
@@ -633,22 +666,7 @@ legend {
                
                <div class="box-body table-responsive" id="lista_imagens" style="background-color:#FFF;">
                 <table id="grid_img" class="table table-bordered table-striped table-hover">
-                  <thead>
-                  <tr>
-                    <th>Descrição</th>
-                    <th>Data</th>
-                    <th>Usuário</th>
-                    <th>Status</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                  </tr>
-                  </tbody>
+                  
                 </table>
               </div>
               
@@ -680,9 +698,26 @@ legend {
                   <label>Status*</label>
                   <select class="form-control" name="status" id="status">
                   	<option value="0"></option>
-                    <option value="2">Em Análise</option>
-                    <option value="3">Aprovado</option>
-                    <option value="4">Negado</option>
+                    <?php if($_SESSION['tipo_usuario'] == 'C'){?>
+                        <option value="2">Fila Auditoria</option>
+                        <option value="3">Pendente</option>
+                        <option value="4">Análise</option>
+                    <?php }elseif($_SESSION['tipo_usuario'] == 'A'){?>
+                        <option value="3">Pendente</option>
+                        <option value="4">Análise</option>
+                        <option value="5">Aprovado</option>
+                        <option value="6">Negado</option>
+                        <option value="7">Pago</option>
+                        <option value="8">Cancelado</option>                    
+                    <?php }else{?>
+                        <option value="2">Fila Auditoria</option>
+                        <option value="3">Pendente</option>
+                        <option value="4">Análise</option>
+                        <option value="5">Aprovado</option>
+                        <option value="6">Negado</option>
+                        <option value="7">Pago</option>
+                        <option value="8">Cancelado</option>
+                    <?php }?>
                   </select>
                 </div>
                 
@@ -711,6 +746,33 @@ legend {
       
     </div>
   </div>
+  
+  
+  <!-- Modal imagem-->
+  <div class="modal fade" id="modal_img" role="dialog">
+    <div class="modal-dialog" id="modal_dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content" id="modal_content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="titulo"></h4>
+        </div>
+        <div class="modal-body" id="modal_body">
+          
+            <img src="" id="foto" border="0" class="img">
+         
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  
 <script src="js/funcoes.js"></script>
 <script src="js/mask.js"></script>
 <script>
@@ -727,6 +789,7 @@ $(document).ready( function(){
 	  }
 	  floatLabel(".floatLabel");
 	})(jQuery);
+	
 	
 	$('#valor_aprovado').prop('disabled', true);
 	$('#qtd_parcelas').prop('disabled', true);
@@ -747,7 +810,7 @@ $(document).ready( function(){
 	 
 	 $('#status').change(function() {
 	   var vstatus = $("option:selected", this).val();
-	   if(vstatus == 3){
+	   if(vstatus == 7){
 		   $('#valor_aprovado').prop('disabled', false);
 			$('#qtd_parcelas').prop('disabled', false);
 			$('#valor_parcela').prop('disabled', false);
@@ -772,8 +835,6 @@ $(document).ready( function(){
 		   $('#valor_aprovado').prop('disabled', true);
 			$('#qtd_parcelas').prop('disabled', true);
 			$('#valor_parcela').prop('disabled', true);
-			
-			$(busca_ocorrencia);
 	})
 	
 	$(busca_ocorrencia);
@@ -781,6 +842,16 @@ $(document).ready( function(){
 	$(busca_imagens);
 	
 	$("#home-tab").tab('show')
-
+	
+	$('#modal_img').on('show.bs.modal', function(event) {
+        var imagem = $(event.relatedTarget).data('img');
+		var tipo = $(event.relatedTarget).data('tipo');
+        $("#foto").attr('src', 'http://fideliza.gmpti.com/api/uploads/'+imagem);
+		$('#titulo').text(tipo);
+    });
+	
+			 
 });
+
+
 </script>

@@ -9,7 +9,7 @@ ini_set('default_charset','UTF-8');
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fideliza</title>
+<title>:: Fideliza ::</title>
 <link rel="stylesheet" href="css/bootstrap.min.css">
 <link rel="stylesheet" href="css/font-awesome.min.css">
 <link rel="shortcut icon" href="img/ico.ico" type="image/x-icon" />
@@ -67,7 +67,7 @@ ini_set('default_charset','UTF-8');
 
 <div class="login-form">
   <form name="form" id="form" method="post" action="">
-        <h2 class="text-center"><img src="img/logo.png" width="200" height="71"></h2>   
+        <h2 class="text-center"><img src="img/logo.png" width="200" height="71"><!--<img src="img/middle2.jpg" width="107" height="71">!--></h2>   
         <div class="form-group">
         	<div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-user"></i></span>

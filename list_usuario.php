@@ -44,22 +44,7 @@
                 <!-- /.box-header -->
                 <div class="box-body table-responsive" id="lista_usuario">
                   <table id="grid" class="table table-bordered table-striped table-hover">
-                    <thead>
-                    <tr>
-                      <th>Editar</th>
-                      <th>Nome</th>
-                      <th>Login</th>
-                      <th>Ativo</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                    </tbody>
+                    
                   </table>
                 </div>
 			</div>

@@ -14,8 +14,10 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'verifica_acesso'){
 									login,
 									senha,
 									acessa_usuario,
-									id_empresa
-									FROM usuario
+									id_empresa,
+									tipo
+								FROM 
+									usuario
 								WHERE 
 									BINARY  login = :login and
 									status = 'A'");
@@ -29,6 +31,7 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'verifica_acesso'){
 				$_SESSION["login"] = $row->login;
 				$_SESSION['empresa'] = $row->id_empresa;
 				$_SESSION["acessa_usuario"] = $row->acessa_usuario;
+				$_SESSION["tipo_usuario"] = $row->tipo;
 				array_push($resultado, array("retorno" => 1));
 				
 				if(isset($_REQUEST['lembrar']) && $_REQUEST['lembrar'] == 'S'){
@@ -66,7 +69,12 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'busca_usuario'){
 				  nome,
 				  login,
 				  if(status = 'A','Ativo','Cancelado') vstatus,
-				  acessa_usuario
+				  acessa_usuario,
+				  tipo,
+				  case when tipo = 'G' then 'Gerência'
+				  	   when tipo = 'A' then 'Administrativo'
+					   when tipo = 'C' then 'Consultor'
+				  end as vtipo
 			  FROM
 				  usuario 
 			  where
@@ -83,12 +91,14 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'busca_usuario'){
 											"nome"=>$row->nome,
 											"login"=>$row->login,
 											"status"=>$row->vstatus,
+											"tipo"=>$row->tipo,
 											"acessa_usuario"=>$row->acessa_usuario));
 			}else{
 				array_push($resultado, array("retorno"=>1,
 											"codigo"=>$row->id,
 											"nome"=>$row->nome,
 											"login"=>$row->login,
+											"tipo"=>$row->vtipo,
 											"status"=>$row->vstatus));
 			}
 		}while($row = $rs->fetch(PDO::FETCH_OBJ));
@@ -114,7 +124,8 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'busca_cliente'){
 							from
 								ocorrencia o
 							where
-								o.id_cliente = c.id) dt_inclusao
+								o.id_cliente = c.id) dt_inclusao,
+							vendedor
 						FROM
 							cliente c
 						where
@@ -124,13 +135,16 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'busca_cliente'){
 	if($row = $rs->fetch(PDO::FETCH_OBJ)){
 		do {
 			
+			$array_vend = json_decode($row->vendedor);
+			
 			array_push($resultado, array("retorno"=>1,
 										"codigo"=>$row->id, 
 										"nome"=>$row->nome,
 										"data_nascimento"=>$row->dt_nasc,
 										"cpf"=>$row->cpf,
 										"status"=>$row->status_emprestimo,
-										"dt_inclusao"=>$row->dt_inclusao));
+										"dt_inclusao"=>$row->dt_inclusao,
+										"vendedor"=>$array_vend->{'vendedor'}));
 		}while($row = $rs->fetch(PDO::FETCH_OBJ));
 	}else{
 		array_push($resultado, array("retorno"=>0, "msg"=>"Dados não encontratos"));
@@ -217,15 +231,17 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'grava_usuario'){
 										senha,
 										status,
 										acessa_usuario,
-										id_empresa)
+										id_empresa,
+										tipo)
 									values
-										(?, ?, ?, ?, ?, ?)");
+										(?, ?, ?, ?, ?, ?, ?)");
 			$rs->bindParam(1, $vnome);
 			$rs->bindParam(2, $vlogin);
 			$rs->bindParam(3, $vsenha);
 			$rs->bindParam(4, $_REQUEST['status']);
 			$rs->bindParam(5, $_REQUEST['acessa_usuario']);
 			$rs->bindParam(6, $_SESSION['empresa']);
+			$rs->bindParam(7, $_REQUEST['tipo']);
 			
 			//echo $rs->queryString; // saída sem parâmetros
 			//$patterns = array('?','?','?','?','?');
@@ -246,7 +262,8 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'grava_usuario'){
 									login = ?,
 									senha = ?,
 									status = ?,
-									acessa_usuario = ?
+									acessa_usuario = ?,
+									tipo = ?
 								where
 									id = ?");
 		$rs->bindParam(1, $vnome);
@@ -254,7 +271,8 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'grava_usuario'){
 		$rs->bindParam(3, $vsenha);
 		$rs->bindParam(4, $_REQUEST['status']);
 		$rs->bindParam(5, $_REQUEST['acessa_usuario']);
-		$rs->bindParam(6, $_REQUEST['cod_usuario']);
+		$rs->bindParam(6, $_REQUEST['tipo']);
+		$rs->bindParam(7, $_REQUEST['cod_usuario']);
 	    if($rs->execute()){
 			array_push($resultado, array("retorno"=>1, "msg"=>"Alterado com sucesso!"));			
 		}else{
@@ -328,7 +346,7 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'grava_ocorrencia'){
 		  	throw new Exception();
 		  
 		  if($con->commit()){
-		  		array_push($resultado, array("retorno"=>1, "msg"=>"Inserido com sucesso!".$vvalor_parcela));
+		  		array_push($resultado, array("retorno"=>1, "msg"=>"Inserido com sucesso!"));
 		  }else{
 			  array_push($resultado, array("retorno"=>0, "msg"=>"Erro ao gravar!"));
 		  }
@@ -374,5 +392,35 @@ if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'busca_imagens'){
 	echo json_encode($resultado);
 }
 
+if(isset($_REQUEST['acao']) && $_REQUEST['acao'] == 'exclui_imagens'){
+	
+	$resultado = array();
+	
+	try{
+		$con->setAttribute(PDO::ATTR_AUTOCOMMIT,0);
+		
+		$con->beginTransaction();
+		
+		$rs = $con->prepare("delete from imagem where id = :id_img");
+		$rs->bindParam(':id_img', $_REQUEST['cod_imagem']);
+		if(!$rs->execute())
+			throw new Exception();
+			
+		if(!unlink("api/uploads/".$_REQUEST['nome_imagem']))
+			throw new Exception();
+		
+		if($con->commit()){
+			array_push($resultado, array("retorno"=>1, "msg"=>"Excluido com sucesso!"));
+		}else{
+			array_push($resultado, array("retorno"=>0, "msg"=>"Erro ao excluir!"));
+		}
+		
+	}catch(Exception $e){
+		$con->rollBack();
+		array_push($resultado, array("retorno"=>0, "msg"=>"Erro ao excluir!"));
+	}
+	
+	echo json_encode($resultado);
+}
 
 ?>

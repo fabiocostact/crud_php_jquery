@@ -36,6 +36,7 @@
     <a href="sistema" class="logo">
       <span class="logo-mini"><img src="img/logo.png" width="55" height="20"></span>
       <span class="logo-lg"><img src="img/logo.png" width="120" height="43"></span>
+      <!--<span class="logo-lg"><img src="img/middle.jpg" width="70" height="45">!--></span>
     </a>
 
     <nav class="navbar navbar-static-top" role="navigation">
