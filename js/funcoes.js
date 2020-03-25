@@ -124,11 +124,11 @@ function busca_usuario(cod_usuario){
 				},
 				success: function(result){
 
-					var retorno = "<thead><tr><th>Nome</th><th>Login</th><th>Status</th><th width='7%' align='center'>Editar</th></tr></thead><tbody>";
+					var retorno = "<thead><tr><th>Nome</th><th>Login</th><th>Tipo</th><th>Status</th><th width='7%' align='center'>Editar</th></tr></thead><tbody>";
 						
 					$.each(result, function(i, obj){
 						if(obj.retorno == 0){
-							retorno += "<tr><td colspan='4' align='center'>"+obj.msg+"</td></tr>";
+							retorno += "<tr><td colspan='5' align='center'>"+obj.msg+"</td></tr>";
 						}else if(obj.retorno == 2){
 							$("#nome").val(obj.nome);
 							$("#login").val(obj.login);
@@ -142,9 +142,11 @@ function busca_usuario(cod_usuario){
 							if(obj.acessa_usuario == 'S'){
 								$("#acessa_usuario").iCheck('check');
 							}
+
+							$("#tipo").val(obj.tipo);
 							
 						}else{
-							retorno += "<tr><td>"+obj.nome+"</td><td>"+obj.login+"</td>";
+							retorno += "<tr><td>"+obj.nome+"</td><td>"+obj.login+"</td><td>"+obj.tipo+"</td>";
 							
 							if(obj.status == 'Ativo'){
 								retorno += "<td><span class='label label-success'>"+obj.status+"</span></td>";
@@ -168,7 +170,7 @@ function busca_usuario(cod_usuario){
 						  //'ordering'    : true,
 						  'info'        : true,
 						  'autoWidth'   : true,
-						  "aoColumns": [null,null,null,{"bSortable": false}]
+						  "aoColumns": [null,null,null,null,{"bSortable": false}]
 					});
 				},
 				error:function(){
@@ -205,15 +207,7 @@ function busca_ocorrencia(){
 						}else{
 							retorno += "<tr><td>"+obj.descricao+"</td>";
 							
-							if(obj.status == '1'){
-								retorno += "<td><span class='label label-info'>Pendente</span></td>";
-							}else if(obj.status == '2'){
-								retorno += "<td><span class='label label-warning'>Em Análise</span></td>";
-							}else if(obj.status == '3'){
-								retorno += "<td><span class='label label-success'>Aprovado</span></td>";
-							}else{
-								retorno += "<td><span class='label label-danger'>Negado</span></td>";
-							}
+							retorno += "<td>"+verifica_status(obj.status)+"</td>";
 							
 							retorno += "<td>"+obj.dt_inclusao+"</td><td>"+obj.usuario+"</td></tr>";
 						}
@@ -240,6 +234,30 @@ function busca_ocorrencia(){
 		});
 }
 
+function verifica_status(status){
+	var retorno = "";
+	
+	if(status == '1'){
+		retorno += "<span class='label' style='background-color:#FF69B4'>Conferência</span>";//rosa
+	}else if(status == '2'){
+		retorno += "<span class='label' style='background-color:#BEBEBE'>Fila Auditoria</span>";
+	}else if(status == '3'){
+		retorno += "<span class='label' style='background-color:#FFFF00; color:#000000'>Pendente</span>";
+	}else if(status == '4'){
+		retorno += "<span class='label' style='background-color:#FFA500'>Análise</span>";//laranja
+	}else if(status == '5'){
+		retorno += "<span class='label label-success'>Aprovado</span>";
+	}else if(status == '6'){
+		retorno += "<span class='label label-danger'>Negado</span>";
+	}else if(status == '7'){
+		retorno += "<span class='label label-primary'>Pago</span>";
+	}else if(status == '8'){
+		retorno += "<span class='label' style='background-color:#000000'>Cancelado</span>";
+	}
+	
+	return retorno;	
+}
+
 function busca_cliente(){
 		 
 		$.ajax({
@@ -261,7 +279,7 @@ function busca_cliente(){
 				},
 			    success: function(result){
 
-					var retorno = "<thead><tr><th>Nome</th><th>Dt. Nascimento</th><th>CPF</th><th>Status</th><th>Dt. Status</th><th width='7%' align='center'>Editar</th></tr></thead><tbody>";
+					var retorno = "<thead><tr><th>Nome</th><th>Dt. Nascimento</th><th>CPF</th><th>Status</th><th>Dt. Status</th><th>Vendedor</th><th width='7%' align='center'>Editar</th></tr></thead><tbody>";
 						
 					$.each(result, function(i, obj){
 						if(obj.retorno == 0){
@@ -269,17 +287,9 @@ function busca_cliente(){
 						}else{
 							retorno += "<tr><td>"+obj.nome+"</td><td>"+obj.data_nascimento+"</td><td>"+obj.cpf+"</td>";
 							
-							if(obj.status == '1'){
-								retorno += "<td><span class='label label-info'>Pendente</span></td>";
-							}else if(obj.status == '2'){
-								retorno += "<td><span class='label label-warning'>Em Análise</span></td>";
-							}else if(obj.status == '3'){
-								retorno += "<td><span class='label label-success'>Aprovado</span></td>";
-							}else{
-								retorno += "<td><span class='label label-danger'>Negado</span></td>";
-							}
+							retorno += "<td>"+verifica_status(obj.status)+"</td>";
 							
-							retorno += "<td>"+obj.dt_inclusao+"</td><td align='center'><a href='#' onclick='link4("+obj.codigo+")'><img src='img/lapis.png' width='auto' height='15px' border='0'/></a></td></tr>";
+							retorno += "<td>"+obj.dt_inclusao+"</td><td>"+obj.vendedor+"</td><td align='center'><a href='#' onclick='link4("+obj.codigo+")'><img src='img/lapis.png' width='auto' height='15px' border='0'/></a></td></tr>";
 						}
 					});
 					
@@ -295,7 +305,7 @@ function busca_cliente(){
 						  //'ordering'    : true,
 						  'info'        : true,
 						  'autoWidth'   : true,
-						  "aoColumns": [null,null,null, null, null,{"bSortable": false}]
+						  "aoColumns": [null,null,null, null, null,null,{"bSortable": false}]
 					});
 				},
 				error:function(){
@@ -342,7 +352,7 @@ function gravar_user(){
 		}
 		
 		var serializeDados = $('#form').serialize();
-		
+
 		$.ajax({
 				url: 'funcoes',
 				method: 'POST',
@@ -353,7 +363,8 @@ function gravar_user(){
 					login:$("#login").val(),
 					senha:$("#senha").val(),
 					status:vstatus,
-					acessa_usuario:vacessa_usuario
+					acessa_usuario:vacessa_usuario,
+					tipo:$("#tipo").val()
 				},
 				beforeSend: function(){
 					 $.blockUI({
@@ -416,7 +427,7 @@ function gravar_ocorrencia(){
   	  });
 	}else{
 		
-		if($("#status").val() == 3 && $("#valor_aprovado").val() == ""){ 
+		if($("#status").val() == 7 && $("#valor_aprovado").val() == ""){ 
 			swal({
 			  title: "Campo inválido!",
 			  text: "Informe o valor aprovado para empréstimo.",
@@ -425,7 +436,7 @@ function gravar_ocorrencia(){
 		  }).then(function(){
 			$("#valor_aprovado").focus();
 		  });
-		}else if($("#status").val() == 3 && $("#qtd_parcelas").val() == ""){ 
+		}else if($("#status").val() == 7 && $("#qtd_parcelas").val() == ""){ 
 			swal({
 			  title: "Campo inválido!",
 			  text: "Informe a quantidade de parcelas aprovado para empréstimo.",
@@ -434,7 +445,7 @@ function gravar_ocorrencia(){
 		  }).then(function(){
 			$("#qtd_parcelas").focus();
 		  });
-		}else if($("#status").val() == 3 && $("#valor_parcela").val() == ""){ 
+		}else if($("#status").val() == 7 && $("#valor_parcela").val() == ""){ 
 			swal({
 			  title: "Campo inválido!",
 			  text: "Informe o valor aprovado por parcela para empréstimo.",
@@ -455,7 +466,7 @@ function gravar_ocorrencia(){
 							valor_aprovado:$("#valor_aprovado").val(),
 							valor_parcela:$("#valor_parcela").val(),
 							qtd_parcelas:$("#qtd_parcelas").val(),
-							ocorrencia:$("#ocorrencia").val()	
+							ocorrencia:$("#ocorrencia").val()							
 						},
 						beforeSend: function(){
 							 $.blockUI({
@@ -486,6 +497,14 @@ function gravar_ocorrencia(){
 									  button: "Ok",
 								  }).then(function(){
 										$('#myModal').modal('hide');
+										$("#status_emprestimo_st").val($("#status").val());
+										$(busca_ocorrencia);
+										$(busca_imagens);
+										$("#status_emprestimo").html(verifica_status($("#status").val()));
+										
+										if($("#status").val() == 7 || $("#status").val() == 8){
+											$("#modal_status").attr("disabled", true);
+										}
 								  });
 							   }
 							});
@@ -497,6 +516,27 @@ function gravar_ocorrencia(){
 				});
 			}
 	}
+}
+
+function download_img(img){	
+		
+	var url = 'api/uploads/'+img;
+	var fileName = img;
+	
+	var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "blob";
+    xhr.onload = function(){
+        var urlCreator = window.URL || window.webkitURL;
+        var imageUrl = urlCreator.createObjectURL(this.response);
+        var tag = document.createElement('a');
+        tag.href = imageUrl;
+        tag.download = fileName;
+        document.body.appendChild(tag);
+        tag.click();
+        document.body.removeChild(tag);
+    }
+    xhr.send();
 }
 
 function busca_imagens(){
@@ -520,13 +560,20 @@ function busca_imagens(){
 				},
 				success: function(result){
 
-					var retorno = "<thead><tr><th>Nome</th><th>Descrição</th><th>Ação</th></thead><tbody>";
+					var retorno = "<thead><tr><th>Nome</th><th>Descrição</th><th align='center'>Ação</th></thead><tbody>";
 						
 					$.each(result, function(i, obj){
 						if(obj.retorno == 0){
 							retorno += "<tr><td colspan='3' align='center'>"+obj.msg+"</td></tr>";
 						}else{
-							retorno += "<tr><td>"+obj.img+"</td><td>"+obj.descricao+"</td><td>Ação</td></tr>";
+							retorno += "<tr><td>"+obj.img+"</td><td>"+obj.descricao+"</td><td>"+
+									"<button type='button' style='margin-right: 1%' class='btn btn-default' data-toggle='modal' data-target='#modal_img' data-img='"+obj.img+"' data-tipo='"+obj.descricao+"'><i class='fa  fa-picture-o text-primary'></i></button>"+ 
+									"<button type='button' onclick=\"download_img('"+obj.img+"')\" style='margin-right: 1%' class='btn btn-default'><i class='fa  fa-download'></i></button>";
+									
+							if($("#status_emprestimo_st").val() != 3){		
+								retorno += "<button type='button' onclick=\"exclui_img('"+obj.img+"', "+obj.id+")\" style='margin-right: 1%' class='btn btn-default'><i class='fa  fa-trash text-danger'></i></button>";
+							}
+							retorno += "</td></tr>";
 						}
 					});
 					
@@ -550,3 +597,67 @@ function busca_imagens(){
 				}
 		});
 }
+
+function exclui_img(img, id){
+	
+		swal({
+      		title: "Excluir imagem!!!",
+      		text: "Deseja excluir essa imagem?",
+      		icon: "warning",
+      		buttons: [
+        		'Cancelar',
+        		'Excluir'
+      		],
+      		dangerMode: true,
+    	}).then(function(isConfirm){
+      		if(isConfirm){
+        		
+				$.ajax({
+				url: 'funcoes',
+				method: 'POST',
+				dataType: 'JSON',
+				data:{acao:'exclui_imagens', cod_imagem:id, nome_imagem:img},
+				beforeSend: function(){
+					 $.blockUI({
+						message: '<img src="img/loading1.gif" height=100px width=100px/>', 
+					  css: {
+						backgroundColor: 'transparent',
+						border: '0'
+						}
+					  });
+				},
+				complete: function(){
+					$.unblockUI();
+				},
+				success: function(result){
+						$.each(result, function(i, obj){
+							   if(obj.retorno == '0'){
+								  swal({
+									  title: obj.msg,
+									  icon: "error",
+									  button: "Ok",
+								  });
+							   }else if(obj.retorno == '1'){
+								   swal({
+									  title: obj.msg,
+									  icon: "success",
+									  button: "Ok",
+								  }).then(function(){
+										$(busca_imagens);
+								  });
+							   }
+							});										
+				},
+				error:function(){
+					console.log('erro');
+				}
+				});
+				
+        	}
+			/*} else {
+				swal("Cancelled", "Your imaginary file is safe :)", "error");
+			}*/
+    	})
+}
+
+
